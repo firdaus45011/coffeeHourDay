@@ -2,22 +2,42 @@
 
 use Illuminate\Support\Facades\Route;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Illuminate\Http\Request;
 
 Route::get(' ', function () {
     return redirect()->route('dashboard');
 });
-Route::view('/coffee/dashboard', 'dashboard')->name('dashboard');
+
+Route::view('coffee/dashboard', 'dashboard')->name('dashboard');
+Route::view('coffee/slot', 'slot')->name('slot');
+
+//Registration
 Route::view('/coffee/registerForm', 'registration/registerForm')->name('registerForm');
+Route::get('/participants-list', [App\Http\Controllers\RegistrationController::class, 'showParticipants'])->name('participants.list');
+/* * */
+
 Route::view('/coffee/team-management', 'team-management')->name('team.management');
-Route::view('/coffee/feedbackForm', 'feedback/feedbackForm')->name('feedbackForm');
-// Route::get('/generate-qr', function () {
-//     $formUrl = route('feedbackForm'); 
-//     return QrCode::size(200)->generate($formUrl);
-// });
+
+//Feedback
 Route::get('/qr-code', function () {
     $formUrl = route('feedbackForm'); 
     return view('feedback/feedbackQr', compact('formUrl'));
 })->name('feedbackQr');
+Route::view('/coffee/feedbackForm', 'feedback/feedbackForm')->name('feedbackForm');
+Route::post('/submit-feedback', function (Request $request) {
+    // Validate the form inputs
+    $validatedData = $request->validate([
+        'experienceRating' => 'required|integer|min:1|max:10',
+        'enjoyedMost' => 'required|string|min:4|max:1000',
+        'improvements' => 'required|string|min:4|max:1000',
+        'issues' => 'nullable|string|min:4|max:1000',
+        'additionalFeedback' => 'nullable|string|min:4|max:1000',
+    ]);
+
+    // Return success message 
+    return redirect()->route('submitSuccess');
+})->name('feedbackSubmit');
+Route::view('/coffee/submitSuccess', 'feedback/submitSuccess')->name('submitSuccess');
 Route::get('coffee/viewFeedback', function () {
     $dummyFeedbackData = 
     [
@@ -114,6 +134,7 @@ Route::get('coffee/viewFeedback', function () {
     ));
     
 })->name('viewFeedback');
+// --!--
 
 
 
